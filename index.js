@@ -1,69 +1,119 @@
-const { Pool } = require('pg');
+const { Pool } = require('pg')
 
 const config = {
-
     database: process.env.DATABASE,
     host: process.env.HOST,
     user: process.env.USERDB,
     password: process.env.PASSWORD,
     port: process.env.PORT
 }
+
 const pool = new Pool(config)
 
-//1. Crear una función asíncrona para registrar un nuevo estudiante en la base de datos.
+//● Agregar un nuevo estudiante
 
 const insertEstudiante = async () => {
-    const text = 'INSERT INTO estudiantes (nombre, rut , curso , nivel) VALUES ($1, $2, $3,$4) RETURNING *';
-    const value = [process.argv[3], process.argv[4], process.argv[5], Number(process.argv[6])]
-    console.log("Estudiante " + value[1] + " agregado con éxito");
-    const result = await pool.query(text, value);
+    try {
+        const sql = 'INSERT INTO estudiantes (nombre, rut, curso, nivel) VALUES ($1, $2, $3, $4) RETURNING *';
+        const values = [process.argv[3], process.argv[4], process.argv[5], Number(process.argv[6])];
+
+        const queryObject = {
+            text: sql,
+            values: values,
+            rowMode: 'array'
+        }
+
+        const result = await pool.query(queryObject)
+        console.log(`Estudiante ${result.rows[0].nombre} agregado con éxito`)
+    } catch (error) {
+        console.error("Ha surgido un error", error)
+    }
 }
 
-//2. Crear una función asíncrona para obtener por consola el registro de un estudiante
-//por medio de su rut. (2 puntos)
+//Consultar los estudiantes registrados.
+
+const selectEstudiantes = async () => {
+    try {
+        const sql = 'SELECT * FROM estudiantes'
+
+        const queryObject = {
+            text: sql,
+            values: [],
+            rowMode: 'array'
+        }
+
+        const result = await pool.query(queryObject)
+        console.log(result.rows)
+    } catch (error) {
+        console.error("Se ha encontrado un error", error)
+    }
+}
+
+//Consultar estudiante por rut.
 
 const selectEstudiante = async () => {
-    const text = 'SELECT * FROM estudiantes WHERE rut = $1'
-    const values = [process.argv[3]]
-    const result = await pool.query(text, values)
-    console.log(result.rows);
+    try {
+        const sql = 'SELECT * FROM estudiantes WHERE rut = $1'
+        const values = [process.argv[4]]
+
+        const queryObject = {
+            text: sql,
+            values: values,
+            rowMode: 'array'
+        }
+
+        const result = await pool.query(queryObject)
+        console.log(result.rows)
+    } catch (error) {
+        console.error(error)
+    }
 }
-//3. Crear una función asíncrona para obtener por consola todos los estudiantes
-//registrados. (2 puntos)
-const selectEstudiantes = async () => {
-    const text = 'SELECT * FROM estudiantes'
-    const result = await pool.query(text)
-    console.log(result.rows);
-}
-//4. Crear una función asíncrona para actualizar los datos de un estudiante en la base de
-//datos. (2 puntos)
+
+//Actualizar la información de un estudiante
 
 const updateEstudiante = async () => {
+    try {
+        const sql = 'UPDATE estudiantes SET nombre = $2 , curso = $3 , nivel = $4 WHERE rut = $1'
+        const values = [process.argv[4], process.argv[3], process.argv[5], process.argv[6]]
 
-    const text = 'UPDATE estudiantes SET nombre = $2 , curso = $3 , nivel = $4 WHERE rut = $1'
-    const value = [process.argv[4], process.argv[3], process.argv[5], process.argv[6]]
-    const result = await pool.query(text, value)
+        const queryObject = {
+            text: sql,
+            values: values,
+            rowMode: 'array'
+        }
 
-    console.log("Estudiante " + value[1] + " editado con éxito");
+        const result = await pool.query(queryObject)
+        console.log(`Estudiante ${values[1]} editado con éxito`)
+    } catch (error) {
+        console.error("Ha surgido un error", error)
+    }
 }
 
-//5. Crear una función asíncrona para eliminar el registro de un estudiante de la base de
-//datos. (2 puntos)
-
+//Eliminar el registro de un estudiante.
 const deleteEstudiante = async () => {
+    try {
+        const sql = 'DELETE FROM estudiantes WHERE rut = $1'
+        const values = [process.argv[4]]
 
-    const text = 'DELETE FROM estudiantes WHERE rut = $1'
-    const value = [process.argv[3]]
-    const result = await pool.query(text, value)
+        const queryObject = {
+            text: sql,
+            values: values,
+            rowMode: 'array'
+        }
 
-    console.log("Registro de Estudiante con rut " + value + " Eliminado con Exito ")
+        const result = await pool.query(queryObject)
+        console.log(`Registro de estudiante con rut ${values} eliminado con éxito`)
+    } catch (error) {
+        console.error(error)
+    }
 }
 
 //Menu de comandos
 const inpt = process.argv[2];
+
 switch (inpt) {
     case 'nuevo':
-        insertEstudiante();
+        insertEstudiante()
         break;
     case 'rut':
         selectEstudiante()
@@ -77,6 +127,7 @@ switch (inpt) {
     case 'eliminar':
         deleteEstudiante();
         break;
+
     default:
         break;
 }
