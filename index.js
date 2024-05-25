@@ -1,3 +1,5 @@
+//Conexión por Pool
+
 const { Pool } = require('pg')
 
 const config = {
@@ -69,7 +71,7 @@ const selectEstudiante = async () => {
     }
 }
 
-//Actualizar la información de un estudiante
+//Actualizar la información de un estudiante.
 
 const updateEstudiante = async () => {
     try {
@@ -130,4 +132,4 @@ switch (inpt) {
 
     default:
         break;
-}
+} 
